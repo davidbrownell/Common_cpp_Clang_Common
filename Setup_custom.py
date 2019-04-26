@@ -52,6 +52,8 @@ from RepositoryBootstrap.SetupAndActivate.Configuration import *            # <U
 
 del sys.path[0]
 
+from _custom_data import _CUSTOM_DATA
+
 # ----------------------------------------------------------------------
 # There are two types of repositories: Standard and Mixin. Only one standard
 # repository may be activated within an environment at a time while any number
@@ -116,4 +118,35 @@ def GetCustomActions(debug, verbose, explicit_configurations):
     cases, this is Bash on Linux systems and Batch or PowerShell on Windows systems.
     """
 
-    return []
+    actions = []
+
+    if CurrentShell.CategoryName == "Windows":
+        # ----------------------------------------------------------------------
+        def FilenameToUri(filename):
+            return CommonEnvironmentImports.FileSystem.FilenameToUri(filename).replace("%", "%%")
+
+        # ----------------------------------------------------------------------
+    else:
+        FilenameToUri = CommonEnvironmentImports.FileSystem.FilenameToUri
+
+    for name, version, path_parts in _CUSTOM_DATA:
+        this_dir = os.path.join(*([_script_dir] + path_parts))
+
+        actions += [
+            CurrentShell.Commands.Execute(
+                'python "{script}" Install "{name}" "{uri}" "{dir}" "/unique_id={version}" /unique_id_is_hash'.format(
+                    script=os.path.join(
+                        os.getenv("DEVELOPMENT_ENVIRONMENT_FUNDAMENTAL"),
+                        "RepositoryBootstrap",
+                        "SetupAndActivate",
+                        "AcquireBinaries.py",
+                    ),
+                    name=name,
+                    uri=FilenameToUri(os.path.join(this_dir, "Install.7z")),
+                    dir=this_dir,
+                    version=version,
+                ),
+            ),
+        ]
+
+    return actions                    

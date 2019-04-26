@@ -27,6 +27,11 @@ _script_fullpath                            = CommonEnvironment.ThisFullpath()
 _script_dir, _script_name                   = os.path.split(_script_fullpath)
 # ----------------------------------------------------------------------
 
+# Ensure that we are loading custom data from this dir and not some other repository.
+sys.modules.pop("_custom_data", None)
+
+from _custom_data import _CUSTOM_DATA
+
 # <Class '<name>' has no '<attr>' member> pylint: disable = E1101
 # <Unrearchable code> pylint: disable = W0101
 # <Unused argument> pylint: disable = W0613
@@ -52,7 +57,37 @@ def GetCustomActions(
     cases, this is Bash on Linux systems and Batch or PowerShell on Windows systems.
     """
 
-    return []
+    actions = []
+
+    if fast:
+        actions.append(
+            CurrentShell.Commands.Message(
+                "** FAST: Activating without verifying content. ({})".format(_script_fullpath),
+            ),
+        )
+    else:
+        for name, version, path_parts in _CUSTOM_DATA:
+            this_dir = os.path.join(*([_script_dir] + path_parts))
+            assert os.path.isdir(this_dir), this_dir
+
+            actions += [
+                CurrentShell.Commands.Execute(
+                    'python "{script}" Verify "{name}" "{dir}" "{version}"'.format(
+                        script=os.path.join(
+                            os.getenv("DEVELOPMENT_ENVIRONMENT_FUNDAMENTAL"),
+                            "RepositoryBootstrap",
+                            "SetupAndActivate",
+                            "AcquireBinaries.py",
+                        ),
+                        name=name,
+                        dir=this_dir,
+                        version=version,
+                    ),
+                ),
+                CurrentShell.Commands.Message(""),
+            ]
+
+    return actions
 
 
 # ----------------------------------------------------------------------

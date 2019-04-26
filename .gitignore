@@ -9,3 +9,6 @@ Activate.sh
 
 .coverage
 coverage.xml
+
+Tools/grcov/v0.4.3/Linux/*
+Tools/grcov/v0.4.3/Windows/*

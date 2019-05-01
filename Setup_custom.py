@@ -98,10 +98,22 @@ def GetDependencies():
 
     d = OrderedDict()
 
-    for architecture in ["x64", "x86"]:
+    if CurrentShell.CategoryName == "Windows":
+        architectures = ["x64", "x86"]
+
+        # On Windows, clang requires MSVC
+        additional_dependency_factories = [lambda arch: Dependency("AB7D87C49C2449F79D9F42E5195030FD", "Common_cpp_MSVC_2019", arch, "https://github.com/davidbrownell/Common_cpp_MSVC_2019.git")]
+
+    else:
+        # Cross compiling on Linux is much more difficult on Linux than it is on
+        # Windows. Only support the current architecture.
+        architectures = [CurrentShell.Architecture]
+        additional_dependency_factories = []
+
+    for architecture in architectures:
         d[architecture] = Configuration(
             architecture,
-            [Dependency("F33C43DA6BB54336A7573B39509CDAD7", "Common_cpp_Common", architecture, "https://github.com/davidbrownell/Common_cpp_Common.git")],
+            [Dependency("F33C43DA6BB54336A7573B39509CDAD7", "Common_cpp_Common", architecture, "https://github.com/davidbrownell/Common_cpp_Common.git")] + [additional_dependency_factory(architecture) for additional_dependency_factory in additional_dependency_factories],
         )
 
     return d

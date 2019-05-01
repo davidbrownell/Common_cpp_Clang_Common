@@ -84,7 +84,6 @@ def GetCustomActions(
                         version=version,
                     ),
                 ),
-                CurrentShell.Commands.Message(""),
             ]
 
     return actions

@@ -18,7 +18,7 @@ import os
 import sys
 
 sys.path.insert(0, os.getenv("DEVELOPMENT_ENVIRONMENT_FUNDAMENTAL"))
-from RepositoryBootstrap.SetupAndActivate import CommonEnvironment, CurrentShell
+from RepositoryBootstrap.SetupAndActivate import CommonEnvironment, CurrentShell, DynamicPluginArchitecture
 
 del sys.path[0]
 
@@ -66,6 +66,7 @@ def GetCustomActions(
             ),
         )
     else:
+        # Verify installations
         for name, version, path_parts in _CUSTOM_DATA:
             this_dir = os.path.join(*([_script_dir] + path_parts))
             assert os.path.isdir(this_dir), this_dir
@@ -85,6 +86,22 @@ def GetCustomActions(
                     ),
                 ),
             ]
+
+        if configuration != "Noop":
+            # Initialize the environment
+            actions += [
+                CurrentShell.Commands.Augment(
+                    "DEVELOPMENT_ENVIRONMENT_TESTER_CONFIGURATIONS",
+                    "c++-coverage_executor-ClangCodeCoverage",
+                    update_memory=True,
+                ),
+            ]
+
+            actions += DynamicPluginArchitecture.CreateRegistrationStatements(
+                "DEVELOPMENT_ENVIRONMENT_TEST_EXECUTORS",
+                os.path.join(_script_dir, "Scripts", "TestExecutors"),
+                lambda fullpath, name, ext: ext == ".py" and name.endswith("TestExecutor"),
+            )
 
     return actions
 

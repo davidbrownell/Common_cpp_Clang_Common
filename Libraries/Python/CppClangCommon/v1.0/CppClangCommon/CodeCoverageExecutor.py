@@ -45,6 +45,9 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
     # ----------------------------------------------------------------------
     # |  Methods
     def __init__(self):
+        if CurrentShell.CategoryName != "Windows":
+            raise Exception("TODO: Clang Code Coverage only works on Windows at the moment")
+
         self._coverage_filename             = None
         self._dirs                          = set()
 
@@ -68,7 +71,8 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             return 0
 
         return Process.Execute(
-            'CreateLcovFile {dirs} "/output_dir={output}"'.format(
+            '{script} {dirs} "/output_dir={output}"'.format(
+                script=CurrentShell.CreateScriptName("CreateLcovFile"),
                 dirs=" ".join(['"/bin_dir={}"'.format(dir) for dir in self._dirs]),
                 output=os.path.dirname(self._coverage_filename),
             ),

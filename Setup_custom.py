@@ -103,18 +103,31 @@ def GetDependencies():
 
         # On Windows, clang requires MSVC
         additional_dependency_factories = [lambda arch: Dependency("AB7D87C49C2449F79D9F42E5195030FD", "Common_cpp_MSVC_2019", arch, "https://github.com/davidbrownell/Common_cpp_MSVC_2019.git")]
+        native_linker_desc = "Augmented with the MSVC linker (link.exe)"
 
     else:
         # Cross compiling on Linux is much more difficult on Linux than it is on
         # Windows. Only support the current architecture.
         architectures = [CurrentShell.Architecture]
         additional_dependency_factories = []
+        native_linker_desc = "Augmented with the binutils linker (ld)"
 
-    for architecture in architectures:
-        d[architecture] = Configuration(
-            architecture,
-            [Dependency("F33C43DA6BB54336A7573B39509CDAD7", "Common_cpp_Common", architecture, "https://github.com/davidbrownell/Common_cpp_Common.git")] + [additional_dependency_factory(architecture) for additional_dependency_factory in additional_dependency_factories],
-        )
+    for key_suffix, desc_suffix, dependency_factories in [
+        (None, None, []),
+        ("ex", native_linker_desc, additional_dependency_factories),
+    ]:
+        for architecture in architectures:
+            if key_suffix is None:
+                key = architecture
+                desc = architecture
+            else:
+                key = "{}-{}".format(architecture, key_suffix)
+                desc = "{} <{}>".format(architecture, desc_suffix)
+
+            d[key] = Configuration(
+                desc,
+                [Dependency("F33C43DA6BB54336A7573B39509CDAD7", "Common_cpp_Common", architecture, "https://github.com/davidbrownell/Common_cpp_Common.git")] + [dependency_factory(architecture) for dependency_factory in dependency_factories],
+            )
 
     d["Noop"] = Configuration(
         "Configuration that doesn't do anything; in Bootstrap repositories (where different versions of repositories conflict with each other (normally, the use of these repositories are mutually exclusive))",

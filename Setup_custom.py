@@ -109,7 +109,7 @@ def GetDependencies():
         # Cross compiling on Linux is much more difficult on Linux than it is on
         # Windows. Only support the current architecture.
         architectures = [CurrentShell.Architecture]
-        additional_dependency_factories = [lambda arch: Dependency("A21B8960BF0347628EBCE72261DAFEA7", "Common_cpp_GCC", arch, "https://github.com/davidbrownell/Common_cpp_GCC.git")]
+        additional_dependency_factories = [lambda arch: Dependency("A21B8960BF0347628EBCE72261DAFEA7", "Common_cpp_GCC", None, "https://github.com/davidbrownell/Common_cpp_GCC.git")]
         native_linker_desc = "Augmented with GCC"
 
     for key_suffix, desc_suffix, dependency_factories in [

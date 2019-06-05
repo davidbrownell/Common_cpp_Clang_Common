@@ -103,14 +103,14 @@ def GetDependencies():
 
         # On Windows, clang requires MSVC
         additional_dependency_factories = [lambda arch: Dependency("AB7D87C49C2449F79D9F42E5195030FD", "Common_cpp_MSVC_2019", arch, "https://github.com/davidbrownell/Common_cpp_MSVC_2019.git")]
-        native_linker_desc = "Augmented with the MSVC linker (link.exe)"
+        native_linker_desc = "Augmented with MSVC"
 
     else:
         # Cross compiling on Linux is much more difficult on Linux than it is on
         # Windows. Only support the current architecture.
         architectures = [CurrentShell.Architecture]
-        additional_dependency_factories = []
-        native_linker_desc = "Augmented with the binutils linker (ld)"
+        additional_dependency_factories = [lambda arch: Dependency("A21B8960BF0347628EBCE72261DAFEA7", "Common_cpp_GCC", arch, "https://github.com/davidbrownell/Common_cpp_GCC.git")]
+        native_linker_desc = "Augmented with GCC"
 
     for key_suffix, desc_suffix, dependency_factories in [
         (None, None, []),

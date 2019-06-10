@@ -118,16 +118,16 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             return not excludes_func(method_name) and includes_func(method_name)
 
         # ----------------------------------------------------------------------
-                            
+
         # grcov will parse every file in the directory which isn't what we want here. Move the coverage
         # files for this binary to a temp dir, parse that dir, and then remove it.
         temp_directory = CurrentShell.CreateTempDirectory()
-        
+
         with CallOnExit(lambda: FileSystem.RemoveTree(temp_directory)):
             gcda_filename = "{}.gcda".format(os.path.splitext(binary_filename)[0])
             assert os.path.isfile(gcda_filename), gcda_filename
 
-            os.rename(gcda_filename, os.path.join(temp_directory, os.path.basename(gcda_filename)))
+            shutil.copyfile(gcda_filename, os.path.join(temp_directory, os.path.basename(gcda_filename)))
 
             gcno_filename = "{}.gcno".format(os.path.splitext(binary_filename)[0])
             assert os.path.isfile(gcno_filename), gcno_filename

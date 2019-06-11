@@ -109,7 +109,16 @@ def GetDependencies():
         # Cross compiling on Linux is much more difficult on Linux than it is on
         # Windows. Only support the current architecture.
         architectures = [CurrentShell.Architecture]
-        additional_dependency_factories = [lambda arch: Dependency("A21B8960BF0347628EBCE72261DAFEA7", "Common_cpp_GCC", None, "https://github.com/davidbrownell/Common_cpp_GCC.git")]
+
+        # Eventually, this code should depend on a custom build of GCC. However, this isn't
+        # working as expected right now.
+        #
+        # On Linux, the following libraries must be installed:
+        #   - libstdc++-7-dev
+        #
+        # additional_dependency_factories = [lambda arch: Dependency("A21B8960BF0347628EBCE72261DAFEA7", "Common_cpp_GCC", None, "https://github.com/davidbrownell/Common_cpp_GCC.git")]
+        additional_dependency_factories = []
+
         native_linker_desc = "Augmented with GCC"
 
     for key_suffix, desc_suffix, dependency_factories in [
@@ -142,7 +151,7 @@ def GetCustomActions(debug, verbose, explicit_configurations):
     """
     Returns an action or list of actions that should be invoked as part of the setup process.
 
-    Actions are generic command line statements defined in 
+    Actions are generic command line statements defined in
     <Common_Environment>/Libraries/Python/CommonEnvironment/v1.0/CommonEnvironment/Shell/Commands/__init__.py
     that are converted into statements appropriate for the current scripting language (in most
     cases, this is Bash on Linux systems and Batch or PowerShell on Windows systems.
@@ -179,4 +188,4 @@ def GetCustomActions(debug, verbose, explicit_configurations):
             ),
         ]
 
-    return actions                    
+    return actions

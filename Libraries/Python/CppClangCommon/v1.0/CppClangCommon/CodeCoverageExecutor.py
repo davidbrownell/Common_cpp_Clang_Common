@@ -67,11 +67,27 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
         if not self._dirs:
             return 0
 
+        # Move coverage data to this dir
+        output_dir = os.path.dirname(self._coverage_filename)
+
+        for filename in FileSystem.WalkFiles(
+            output_dir,
+            include_file_extensions=[".gcda"],
+        ):
+            dest_filename = os.path.join(output_dir, os.path.basename(filename))
+            if dest_filename == filename:
+                continue
+
+            if os.path.isfile(dest_filename):
+                raise Exception("The file '{}' already exists ({})".format(dest_filename, filename))
+
+            shutil.copyfile(filename, dest_filename)
+
         return Process.Execute(
             '{script} {dirs} "/output_dir={output}"'.format(
                 script=CurrentShell.CreateScriptName("CreateLcovFile"),
                 dirs=" ".join(['"/bin_dir={}"'.format(dir) for dir in self._dirs]),
-                output=os.path.dirname(self._coverage_filename),
+                output=output_dir,
             ),
             output_stream,
         )
@@ -79,6 +95,7 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
     # ----------------------------------------------------------------------
     @Interface.override
     def ExtractCoverageInfo(self, coverage_filename, binary_filename, includes, excludes, output_stream):
+
         # This is a hack. The names extracted are mangled while the names provided
         # in includes and excludes are in the glob format. Split the glob and then
         # determine matches by checking to see if each component is in the mangled name.
@@ -121,19 +138,40 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
         temp_directory = CurrentShell.CreateTempDirectory()
 
         with CallOnExit(lambda: FileSystem.RemoveTree(temp_directory)):
-            gcda_filename = "{}.gcda".format(os.path.splitext(binary_filename)[0])
-            assert os.path.isfile(gcda_filename), gcda_filename
+            # ----------------------------------------------------------------------
+            def GetCoverageFilename(ext):
+                dirname, basename = os.path.split(binary_filename)
+                basename = os.path.splitext(basename)[0]
 
-            shutil.copyfile(gcda_filename, os.path.join(temp_directory, os.path.basename(gcda_filename)))
+                for item in os.listdir(dirname):
+                    fullpath = os.path.join(dirname, item)
+                    if not os.path.isfile(fullpath):
+                        continue
 
-            gcno_filename = "{}.gcno".format(os.path.splitext(binary_filename)[0])
-            assert os.path.isfile(gcno_filename), gcno_filename
+                    this_basename, this_ext = os.path.splitext(item)
+                    if this_ext == ext and this_basename.startswith(basename):
+                        return fullpath
+
+                return None
+
+            # ----------------------------------------------------------------------
+
+            gcno_filename = GetCoverageFilename(".gcno")
+            assert os.path.isfile(gcno_filename), (binary_filename, gcno_filename)
 
             shutil.copyfile(gcno_filename, os.path.join(temp_directory, os.path.basename(gcno_filename)))
 
+            gcda_filename = GetCoverageFilename(".gcda")
+            assert os.path.isfile(gcda_filename), (binary_filename, gcda_filename)
+
+            shutil.copyfile(gcda_filename, os.path.join(temp_directory, os.path.basename(gcda_filename)))
+
             # Convert the content
             result = Process.Execute(
-                'CreateLcovFile "/bin_dir={}" /type=ade'.format(temp_directory),
+                '{} "/bin_dir={}" /type=ade'.format(
+                    CurrentShell.CreateScriptName("CreateLcovFile"),
+                    temp_directory,
+                ),
                 output_stream,
             )
 

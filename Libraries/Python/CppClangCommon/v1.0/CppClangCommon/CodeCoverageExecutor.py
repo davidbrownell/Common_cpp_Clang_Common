@@ -45,9 +45,6 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
     # ----------------------------------------------------------------------
     # |  Methods
     def __init__(self):
-        if CurrentShell.CategoryName != "Windows":
-            raise Exception("TODO: Clang Code Coverage only works on Windows at the moment")
-
         self._coverage_filename             = None
         self._dirs                          = set()
 

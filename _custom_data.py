@@ -42,7 +42,7 @@ elif CurrentShell.CategoryName == "Linux":
     _CUSTOM_DATA                            = [
         (
             "grcov - 0.4.3",
-            "9326c3c2b6eee44d0e854f03ba07329dd352e7f187fb5db9f0ccfc19877dfcf0",
+            "8b68acb4e5467943aec3e1ec9472876c8f8544d00b489422a3a2d9895c58f0d1",
             [
                 "Tools",
                 "grcov",

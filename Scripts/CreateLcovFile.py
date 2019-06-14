@@ -31,7 +31,7 @@ _script_dir, _script_name                   = os.path.split(_script_fullpath)
 )
 @CommandLine.Constraints(
     bin_dir=CommandLine.DirectoryTypeInfo(
-        arity="+",
+        arity="*",
     ),
     output_dir=CommandLine.DirectoryTypeInfo(
         ensure_exists=False,
@@ -43,7 +43,7 @@ _script_dir, _script_name                   = os.path.split(_script_fullpath)
     output_stream=None,
 )
 def EntryPoint(
-    bin_dir,
+    bin_dir=None,
     not_llvm=False,
     output_dir=None,
     type=None,
@@ -53,6 +53,9 @@ def EntryPoint(
 
     bin_dirs = bin_dir
     del bin_dir
+
+    if not bin_dirs:
+        bin_dirs.append(os.getcwd())
 
     if len(bin_dirs) > 1 and not output_dir:
         raise CommandLine.UsageException("An output_dir must be provided when multiple bin_dirs are parsed")
@@ -64,16 +67,22 @@ def EntryPoint(
         prefix="\nResults: ",
         suffix="\n",
     ) as dm:
-        FileSystem.MakeDirs(output_dir)
+        output_filename = os.path.join(output_dir, "lcov.info")
 
-        command_line = 'grcov {dirs} -o "{output_filename}"{llvm}{type}'.format(
-            dirs=" ".join(['"{}"'.format(dir) for dir in bin_dirs]),
-            output_filename=os.path.join(output_dir, "lcov.info"),
-            llvm="" if not_llvm else " --llvm",
-            type="" if type is None else " -t {}".format(type),
-        )
-        
-        dm.result = Process.Execute(command_line, dm.stream)
+        dm.stream.write("Creating '{}'...".format(output_filename))
+        with dm.stream.DoneManager() as this_dm:
+            FileSystem.MakeDirs(output_dir)
+
+            command_line = 'grcov {dirs} -o "{output_filename}"{llvm}{type}'.format(
+                dirs=" ".join(['"{}"'.format(dir) for dir in bin_dirs]),
+                output_filename=output_filename,
+                llvm="" if not_llvm else " --llvm",
+                type="" if type is None else " -t {}".format(type),
+            )
+
+            this_dm.result = Process.Execute(command_line, dm.stream)
+            if this_dm.result != 0:
+                return this_dm.result
 
         return dm.result
 

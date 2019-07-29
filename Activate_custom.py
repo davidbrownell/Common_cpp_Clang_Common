@@ -15,7 +15,9 @@
 """Performs repository-specific activation activities."""
 
 import os
+import shutil
 import sys
+import textwrap
 
 sys.path.insert(0, os.getenv("DEVELOPMENT_ENVIRONMENT_FUNDAMENTAL"))
 from RepositoryBootstrap.SetupAndActivate import CommonEnvironment, CurrentShell, DynamicPluginArchitecture
@@ -86,6 +88,42 @@ def GetCustomActions(
                     ),
                 ),
             ]
+
+        if configuration.endswith("ex"):
+            actions += [CurrentShell.Commands.Set("DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY", "1")]
+
+            if CurrentShell.CategoryName == "Linux":
+                # If here, we are relying on tools that should be installed within the
+                # environment. Verify that these tools are available.
+                if not shutil.which("ld"):
+                    raise Exception(
+                        textwrap.dedent(
+                            """\
+                            'ld' was not found. Please install this toolset using your system's package manager.
+
+                            On Ubuntu (or other Debian-based systems), run:
+                                sudo apt-get update
+                                sudo apt-get install -y binutils
+
+                            """,
+                        ),
+                    )
+
+                if not os.path.isfile("/usr/lib/x86_64-linux-gnu/crt1.o"):
+                    raise Exception(
+                        textwrap.dedent(
+                            """\
+                            The C runtime was not found. Please install this dependency using you system's package manager.
+
+                            On Ubuntu (or other Debian-based systems), run:
+                                sudo apt-get update
+                                sudo apt-get install -y libstdc++-7-dev
+
+                            """,
+                        ),
+                    )
+        else:
+            actions += [CurrentShell.Commands.Set("DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY", "0")]
 
         if configuration != "noop":
             # Initialize the environment

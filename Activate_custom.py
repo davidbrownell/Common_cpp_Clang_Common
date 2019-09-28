@@ -20,7 +20,11 @@ import sys
 import textwrap
 
 sys.path.insert(0, os.getenv("DEVELOPMENT_ENVIRONMENT_FUNDAMENTAL"))
-from RepositoryBootstrap.SetupAndActivate import CommonEnvironment, CurrentShell, DynamicPluginArchitecture
+from RepositoryBootstrap.SetupAndActivate import (
+    CommonEnvironment,
+    CurrentShell,
+    DynamicPluginArchitecture,
+)
 
 del sys.path[0]
 
@@ -64,7 +68,9 @@ def GetCustomActions(
     if fast:
         actions.append(
             CurrentShell.Commands.Message(
-                "** FAST: Activating without verifying content. ({})".format(_script_fullpath),
+                "** FAST: Activating without verifying content. ({})".format(
+                    _script_fullpath,
+                ),
             ),
         )
     else:
@@ -90,7 +96,12 @@ def GetCustomActions(
             ]
 
         if configuration.endswith("ex"):
-            actions += [CurrentShell.Commands.Set("DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY", "1")]
+            actions += [
+                CurrentShell.Commands.Set(
+                    "DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY",
+                    "1",
+                )
+            ]
 
             if CurrentShell.CategoryName == "Linux":
                 # If here, we are relying on tools that should be installed within the
@@ -123,7 +134,12 @@ def GetCustomActions(
                         ),
                     )
         else:
-            actions += [CurrentShell.Commands.Set("DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY", "0")]
+            actions += [
+                CurrentShell.Commands.Set(
+                    "DEVELOPMENT_ENVIRONMENT_CPP_CLANG_AS_PROXY",
+                    "0",
+                )
+            ]
 
         if configuration != "noop":
             # Initialize the environment
@@ -131,14 +147,14 @@ def GetCustomActions(
                 CurrentShell.Commands.Augment(
                     "DEVELOPMENT_ENVIRONMENT_TESTER_CONFIGURATIONS",
                     "c++-coverage_executor-ClangCodeCoverage",
-                    update_memory=True,
                 ),
             ]
 
             actions += DynamicPluginArchitecture.CreateRegistrationStatements(
                 "DEVELOPMENT_ENVIRONMENT_TEST_EXECUTORS",
                 os.path.join(_script_dir, "Scripts", "TestExecutors"),
-                lambda fullpath, name, ext: ext == ".py" and name.endswith("TestExecutor"),
+                lambda fullpath, name, ext: ext == ".py"
+                and name.endswith("TestExecutor"),
             )
 
     return actions

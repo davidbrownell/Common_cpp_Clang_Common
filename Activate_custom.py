@@ -157,6 +157,20 @@ def GetCustomActions(
                 and name.endswith("TestExecutor"),
             )
 
+        if configuration.startswith("x86"):
+            actions += [
+                CurrentShell.Commands.Augment(
+                    "CXXFLAGS",
+                    "-m32",
+                    is_space_delimited_string=True,
+                ),
+                CurrentShell.Commands.Augment(
+                    "CFLAGS",
+                    "-m32",
+                    is_space_delimited_string=True,
+                ),
+            ]
+
     return actions
 
 

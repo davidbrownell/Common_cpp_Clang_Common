@@ -26,7 +26,9 @@ from CommonEnvironment import Interface
 from CommonEnvironment import Process
 from CommonEnvironment.Shell.All import CurrentShell
 
-from CppCommon.CodeCoverageExecutor import CodeCoverageExecutor as CodeCoverageExecutorBase
+from CppCommon.CodeCoverageExecutor import (
+    CodeCoverageExecutor as CodeCoverageExecutorBase,
+)
 
 # ----------------------------------------------------------------------
 _script_fullpath                            = CommonEnvironment.ThisFullpath()
@@ -78,10 +80,8 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             if dest_filename == filename:
                 continue
 
-            if os.path.isfile(dest_filename):
-                raise Exception("The file '{}' already exists ({})".format(dest_filename, filename))
-
-            shutil.copyfile(filename, dest_filename)
+            if not os.path.isfile(dest_filename):
+                shutil.copyfile(filename, dest_filename)
 
         return Process.Execute(
             '{script} {dirs} "/output_dir={output}"'.format(
@@ -94,7 +94,14 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
 
     # ----------------------------------------------------------------------
     @Interface.override
-    def ExtractCoverageInfo(self, coverage_filename, binary_filename, includes, excludes, output_stream):
+    def ExtractCoverageInfo(
+        self,
+        coverage_filename,
+        binary_filename,
+        includes,
+        excludes,
+        output_stream,
+    ):
 
         # This is a hack. The names extracted are mangled while the names provided
         # in includes and excludes are in the glob format. Split the glob and then
@@ -117,13 +124,17 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
 
         if excludes:
             excludes = [ProcessFilter(exclude) for exclude in excludes]
-            excludes_func = lambda method_name: any(Matches(method_name, exclude) for exclude in excludes)
+            excludes_func = lambda method_name: any(
+                Matches(method_name, exclude) for exclude in excludes
+            )
         else:
             excludes_func = lambda method_name: False
 
         if includes:
             includes = [ProcessFilter(include) for include in includes]
-            includes_func = lambda method_name: any(Matches(method_name, include) for include in includes)
+            includes_func = lambda method_name: any(
+                Matches(method_name, include) for include in includes
+            )
         else:
             includes_func = lambda method_name: True
 
@@ -159,12 +170,18 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             gcno_filename = GetCoverageFilename(".gcno")
             assert os.path.isfile(gcno_filename), (binary_filename, gcno_filename)
 
-            shutil.copyfile(gcno_filename, os.path.join(temp_directory, os.path.basename(gcno_filename)))
+            shutil.copyfile(
+                gcno_filename,
+                os.path.join(temp_directory, os.path.basename(gcno_filename)),
+            )
 
             gcda_filename = GetCoverageFilename(".gcda")
             assert os.path.isfile(gcda_filename), (binary_filename, gcda_filename)
 
-            shutil.copyfile(gcda_filename, os.path.join(temp_directory, os.path.basename(gcda_filename)))
+            shutil.copyfile(
+                gcda_filename,
+                os.path.join(temp_directory, os.path.basename(gcda_filename)),
+            )
 
             # Convert the content
             result = Process.Execute(

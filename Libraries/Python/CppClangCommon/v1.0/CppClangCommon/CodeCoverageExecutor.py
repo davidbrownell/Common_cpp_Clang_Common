@@ -84,8 +84,8 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
                 shutil.copyfile(filename, dest_filename)
 
         return Process.Execute(
-            '{script} {dirs} "/output_dir={output}"'.format(
-                script=CurrentShell.CreateScriptName("CreateLcovFile"),
+            '{script} Lcov {dirs} "/output_dir={output}"'.format(
+                script=CurrentShell.CreateScriptName("ExtractCoverageInfo"),
                 dirs=" ".join(['"/bin_dir={}"'.format(dir) for dir in self._dirs]),
                 output=output_dir,
             ),
@@ -185,8 +185,8 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
 
             # Convert the content
             result = Process.Execute(
-                '{} "/bin_dir={}" /type=ade'.format(
-                    CurrentShell.CreateScriptName("CreateLcovFile"),
+                '{} Lcov "/bin_dir={}" /type=ade'.format(
+                    CurrentShell.CreateScriptName("ExtractCoverageInfo"),
                     temp_directory,
                 ),
                 output_stream,

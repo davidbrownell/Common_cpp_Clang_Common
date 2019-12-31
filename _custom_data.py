@@ -23,7 +23,7 @@ from CommonEnvironment.Shell.All import CurrentShell
 # ----------------------------------------------------------------------
 _script_fullpath                            = CommonEnvironment.ThisFullpath()
 _script_dir, _script_name                   = os.path.split(_script_fullpath)
-#  ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 if CurrentShell.CategoryName == "Windows":
     _CUSTOM_DATA                            = [

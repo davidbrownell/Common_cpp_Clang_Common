@@ -168,7 +168,7 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             # ----------------------------------------------------------------------
 
             gcno_filename = GetCoverageFilename(".gcno")
-            assert os.path.isfile(gcno_filename), (binary_filename, gcno_filename)
+            assert gcno_filename and os.path.isfile(gcno_filename), (binary_filename, gcno_filename)
 
             shutil.copyfile(
                 gcno_filename,
@@ -176,7 +176,7 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             )
 
             gcda_filename = GetCoverageFilename(".gcda")
-            assert os.path.isfile(gcda_filename), (binary_filename, gcda_filename)
+            assert gcda_filename and os.path.isfile(gcda_filename), (binary_filename, gcda_filename)
 
             shutil.copyfile(
                 gcda_filename,

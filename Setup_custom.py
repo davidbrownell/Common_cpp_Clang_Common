@@ -130,7 +130,7 @@ def GetDependencies():
                 key = architecture
                 desc = architecture
             else:
-                key = "{}-{}".format(architecture, key_suffix)
+                key = "{}_{}".format(architecture, key_suffix)
                 desc = "{} <{}>".format(architecture, desc_suffix)
 
             d[key] = Configuration(

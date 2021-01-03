@@ -7,7 +7,7 @@
 # |
 # ----------------------------------------------------------------------
 # |
-# |  Copyright David Brownell 2019-20
+# |  Copyright David Brownell 2019-21
 # |  Distributed under the Boost Software License, Version 1.0. See
 # |  accompanying file LICENSE_1_0.txt or copy at
 # |  http://www.boost.org/LICENSE_1_0.txt.
@@ -103,10 +103,11 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
         output_stream,
     ):
 
-        # This is a hack. The names extracted are mangled while the names provided
-        # in includes and excludes are in the glob format. Split the glob and then
-        # determine matches by checking to see if each component is in the mangled name.
-        # There is a lot that could go wrong with this, but hopefully it is good enough.
+        # This is a hack. The names extracted from the coverage files are mangled
+        # while the names provided in includes and excludes are in the glob format.
+        # Split the glob and then determine matches by checking to see if each component
+        # is in the mangled name. There is a lot that could go wrong with this, but
+        # hopefully it is good enough.
 
         # ----------------------------------------------------------------------
         def ProcessFilter(value):
@@ -195,6 +196,10 @@ class CodeCoverageExecutor(CodeCoverageExecutorBase):
             if result != 0:
                 return result
 
+            # Note that the coverage files for all output was generated when coverage was stopped.
+            # These coverage files are used to extract coverage percentages for display purposes.
+            # Don't let the output name of the file fool you - these files are different from the
+            # globally generated coverage file.
             coverage_filename = os.path.join(temp_directory, "lcov.info")
             assert os.path.isfile(coverage_filename), coverage_filename
 
